@@ -2,18 +2,27 @@ import tkinter as tk
 from tkinter import ttk, font, messagebox
 import requests
 
-url = "https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange?json"
-response = requests.get(url)
+url = ""
+resource = ""
 USD_currency = 0.0
 EUR_currency = 0.0
 GBP_currency = 0.0
 PLN_currency = 0.0
-if response.status_code == 200:
-    data = response.json()
-    USD_currency = [item for item in data if item['cc'] == 'USD'][0]['rate']
-    EUR_currency = [item for item in data if item['cc'] == 'EUR'][0]['rate']
-    GBP_currency = [item for item in data if item['cc'] == 'GBP'][0]['rate']
-    PLN_currency = [item for item in data if item['cc'] == 'PLN'][0]['rate']
+try:
+    url = "https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange?json"
+    resource = requests.get(url, timeout=10)
+    if resource.status_code != 200:
+        raise requests.ConnectionError
+    else:
+        response = resource.json()
+        USD_currency = [item for item in response if item['cc'] == 'USD'][0]['rate']
+        EUR_currency = [item for item in response if item['cc'] == 'EUR'][0]['rate']
+        GBP_currency = [item for item in response if item['cc'] == 'GBP'][0]['rate']
+        PLN_currency = [item for item in response if item['cc'] == 'PLN'][0]['rate']
+except requests.ConnectionError:
+    messagebox.showerror("Помилка з'єднання",
+                         "Не вдалося підключитися до ресурсу НБУ. Перевірте підключення до інтернету.")
+    quit(9)
 
 
 def submit():
